@@ -2,6 +2,7 @@
 ---
 title: "Exercise Set 1"
 author: "T. Evgeniou"
+runtime: shiny
 output: html_document
 ---
 
@@ -58,7 +59,7 @@ For more information on downloading finance data from the internet as well as on
 1. Can you find some interesting finance related R package or github repository? 
 **Your Answers here:**
 <br>
-<br>
+[Downloading foreign exchange data from Oanda] (http://www.quantmod.com/documentation/getFX.html)
 
 <hr>
 <hr>
@@ -86,10 +87,22 @@ pnl_plot(SPY)
 
 **Your Answers here:**
 <br>
+1. The mytickers variable in the dataSet1 file has SPY and AAPL (the ticker symbol for Apple) as inputs in this line mytickers = c("SPY", "AAPL"). Hence, when the code retrieves data it retrieves that of Apple too.
 <br>
+2. The cumulative daily returns of Apple is `r round(100*sum(StockReturns[,2]),1)` %.
 <br>
+   The average daily returns of Apple is `r round(100*mean(StockReturns[,2]),3)`%.
 <br>
-
+   The standard deviation of the daily returns for the Apple is `r round(100*sd(StockReturns[,2]),3)`%.
+<br>
+3. To get information on Yahoo!, the line mytickers = c("SPY", "AAPL") in dataSet1 should be changed to     mytickers = c("SPY", "AAPL", "YHOO"), including the ticker for Yahoo.
+<br>
+   The cumulative daily returns of Yahoo is `r round(100*sum(StockReturns[,3]),1)` %.
+<br>
+  The average daily returns of Yahoo is `r round(100*mean(StockReturns[,3]),3)`%.`
+<br>
+  The standard deviation of the daily returns for the Yahoo is `r round(100*sd(StockReturns[,3]),3)`%.
+<br>
 <hr>
 <hr>
 
@@ -127,9 +140,19 @@ We can also transpose the matrix of returns to create a new "horizontal" matrix.
 
 **Your Answers here:**
 <br>
+1. The nrow and ncolumns commands must be used.`r transposedData = t(StockReturns)`
 <br>
+The number of rows is `r nrow(transposedData)`.
 <br>
+The number of columns is `r ncol(transposedData)`.
 <br>
+2.
+```{r echo=TRUE, comment=NA, warning=FALSE, message=FALSE,results='asis',fig.align='center', fig.height=4,fig.width= 6, fig=TRUE}
+portfolio2 = apply(transposedData,2,mean)
+names(portfolio2) <- colnames(transposedData)
+pnl_plot(portfolio2)
+```
+
 
 <hr>
 <hr>
@@ -145,8 +168,14 @@ This is an important step and will get you to think about the overall process on
 
 **Your Answers here:**
 <br>
+1. The start date in the dataSet1 file should be 2001-01-01, startDate = "2001-01-01". The present exercise set already has this date set as the start date.
 <br>
-<br>
+2. I can add more ticker symbols to mytickers = c("SPY", "AAPL", "YHOO") such as mytickers = c("SPY", "AAPL", "YHOO", "GOOG", "MSFT"). Then I can apply the code in part 2 above to plot the portfolio.
+```{r eval = FALSE, echo=TRUE, comment=NA, warning=FALSE, message=FALSE,results='asis'}
+portfolio = apply(StockReturns,1,mean)
+names(portfolio) <- rownames(StockReturns)
+pnl_plot(portfolio)
+```
 <br>
 
 <hr>
@@ -172,16 +201,22 @@ Try it!
 
 1. Once you write and read the data as described above, what happens when you run this command in the console of the RStudio: `sum(myData != StockReturns[1:20,])`
 2. *(Extra exercise)* What do you think will happen if you now run this command, and why:  
-
 ```{r eval = FALSE, echo=TRUE}
-myData + StockReturns[1:40,])
+myData + StockReturns[1:40,]
 ```
 
 **Your Answers here:**
 <br>
+1. 
+```{r echo=TRUE, comment=NA, warning=FALSE, message=FALSE,results='asis',fig.align='center', fig.height=4,fig.width= 6, fig=TRUE}
+write.csv(StockReturns[1:20,c("SPY","AAPL")], file = "twentydays.csv", row.names = TRUE, col.names = TRUE) 
+myData <- read.csv(file = "twentydays.csv", header = TRUE, sep=";")
+sum(myData != StockReturns[1:20,])
+```
 <br>
+The sum command gives me 20 as the answer, which is the number of data points that I read and wrote for the stock returns of SPY and AAPL. However the output is a lump of data with dates and stock returns of SPY and AAPL all together that is meaningless and the code above should have sep";" changed to sep"," so that the data is presented with clarity under 3 headers - date, SPY and AAPL.
 <br>
-<br>
+2. You will get an error as the variables myData and StockReturns dont match up. myData has date, SPY and AAPL returns all lumped together with 20 observations, while StockReturns has date as a header and returns of SPY, AAPL and YHOO for 4028 observations.
 
 <hr>
 <hr>
@@ -191,12 +226,22 @@ myData + StockReturns[1:40,])
 Can you now load another dataset from some CSV file and report some basic statistics about that data? 
 
 <br>
-
+```{r echo=TRUE, comment=NA, warning=FALSE, message=FALSE,results='asis',fig.align='center', fig.height=4,fig.width= 6, fig=TRUE}
+myTempData <- read.csv(file = "annualglobaltemperatures.csv", header = TRUE, sep=",")
+class(myTempData)
+dim(myTempData)
+nrow(myTempData)
+ncol(myTempData)
+```
+<br>
+I have loaded data on average global mean temperature anomalies in degrees Celsius relative to a base period. Fpr GISTEMP, the base period is the average between 1951-1980 and for GCAG, the base period is the 20th century average.For this data it has 272 and 3 as dimensions with 272 rows and 3 columns.
+<br>
+<br>
 ### Creating Interactive Documents
 
 Finally, just for fun, one can add some interactivity in the report using [Shiny](http://rmarkdown.rstudio.com/authoring_shiny.html).All one needs to do is set the eval flag of the code chunk below (see the .Rmd file) to "TRUE", add the line "runtime: shiny" at the very begining of the .Rmd file, make the markdown output to be "html_document", and then press "Run Document". 
 
-```{r, eval=FALSE, echo = TRUE}
+```{r, eval=TRUE, echo = TRUE}
 sliderInput("startdate", "Starting Date:", min = 1, max = length(portfolio), 
             value = 1)
 sliderInput("enddate", "End Date:", min = 1, max = length(portfolio), 
